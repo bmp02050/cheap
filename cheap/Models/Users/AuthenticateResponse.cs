@@ -11,9 +11,11 @@ public class AuthenticateResponse
         Id = user.Id;
         Username = user.Username;
         Token = token;
+        Success = true;
     }
 
     public Guid Id { get; set; }
     public String? Username { get; set; }
     public String? Token { get; set; }
+    public Boolean Success { get; set; }
 }
