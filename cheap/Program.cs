@@ -36,7 +36,8 @@ builder.Services
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    }).AddJwtBearer(o =>
+    })
+    .AddJwtBearer(o =>
     {
         o.TokenValidationParameters = new TokenValidationParameters
         {

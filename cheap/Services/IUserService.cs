@@ -12,7 +12,6 @@ namespace cheap.Services;
 
 public interface IUserService
 {
-    Task<AuthenticateResponse> Authenticate(AuthenticateModel model);
     Task<User> GetById(Guid id);
     Task<User> Create(User user, string password);
     Task<User> Update(User user, string password = null);
@@ -30,35 +29,7 @@ public class UserService : IUserService
         Context = context;
         _jwt = jwtSettings.Value;
     }
-
-    public async Task<AuthenticateResponse> Authenticate(AuthenticateModel model)
-    {
-        if ((string.IsNullOrEmpty(model.Username) && String.IsNullOrEmpty(model.Email)) ||
-            string.IsNullOrEmpty(model.Password))
-            return null;
-
-        var user = await Context.Users.FirstOrDefaultAsync(x => x.Username == model.Username || x.Email == model.Email);
-
-        // check if username exists
-        if (user == null)
-            return null;
-
-        // check if password is correct
-        if (!VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
-            return null;
-
-        if (!user.VerifiedEmail)
-            throw new Exception("This user does not exist or is not verified");
-
-        // authentication successful
-        var token = GetToken(user);
-        return new AuthenticateResponse(new UserModel()
-        {
-            Id = user.Id,
-            Username = user.Username,
-        }, token);
-    }
-
+    
     public async Task<User> GetById(Guid id)
     {
         return await Context.Users.Where(x => x.Id == id)
@@ -154,48 +125,5 @@ public class UserService : IUserService
         passwordSalt = hmac.Key;
         passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
     }
-
-    private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
-    {
-        if (password == null) throw new ArgumentNullException("password");
-        if (string.IsNullOrWhiteSpace(password))
-            throw new ArgumentException("Value cannot be empty or whitespace only string.", "password");
-        if (storedHash.Length != 64)
-            throw new ArgumentException("Invalid length of password hash (64 bytes expected).", "passwordHash");
-        if (storedSalt.Length != 128)
-            throw new ArgumentException("Invalid length of password salt (128 bytes expected).", "passwordHash");
-
-        using var hmac = new HMACSHA512(storedSalt);
-        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return !computedHash.Where((t, i) => t != storedHash[i]).Any();
-    }
-
-    private String GetToken(User user)
-    {
-        var issuer = _jwt.Issuer;
-        var audience = _jwt.Audience;
-        var key = Encoding.ASCII.GetBytes
-            (_jwt.Key);
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim("Id", user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                new Claim(JwtRegisteredClaimNames.Email, user.Username),
-                new Claim(JwtRegisteredClaimNames.Jti,
-                    user.Id.ToString())
-            }),
-            Expires = DateTime.UtcNow.AddMinutes(60),
-            Issuer = issuer,
-            Audience = audience,
-            SigningCredentials = new SigningCredentials
-            (new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha512Signature)
-        };
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        var jwtToken = tokenHandler.WriteToken(token);
-        return jwtToken;
-    }
+    
 }

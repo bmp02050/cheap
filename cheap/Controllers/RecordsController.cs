@@ -1,7 +1,6 @@
 using AutoMapper;
 using cheap.Entities;
 using cheap.Models;
-using cheap.Models.Users;
 using cheap.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +16,7 @@ public class RecordsController : Controller
 {
     private IMapper _mapper;
     private IBaseService<Record> _recordService;
+
     public RecordsController(IMapper mapper, IBaseService<Record> recordService)
     {
         _mapper = mapper;
@@ -39,6 +39,7 @@ public class RecordsController : Controller
 
         return BadRequest(response);
     }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetRecord(Guid id)
     {
@@ -52,7 +53,7 @@ public class RecordsController : Controller
 
         return BadRequest(response);
     }
-    
+
     [HttpPost("{id}")]
     public async Task<IActionResult> UpdateRecord([FromBody] RecordModel recordModel)
     {
@@ -69,6 +70,4 @@ public class RecordsController : Controller
 
         return BadRequest(response);
     }
-    
 }
-        
