@@ -18,11 +18,11 @@ public class RecordService : IBaseService<Record>
         ItemService = itemService;
     }
 
-    public async Task<Response<Record>> Get(Guid userId, Guid id)
+    public async Task<Response<Record?>> Get(Guid userId, Guid id)
     {
         try
         {
-            return new Response<Record>(true, await Context.Records
+            return new Response<Record?>(true, await Context.Records
                 .Where(x => x.Id == id)
                 .Include(x => x.Item)
                 .Include(x => x.Location)
@@ -30,7 +30,7 @@ public class RecordService : IBaseService<Record>
         }
         catch (Exception ex)
         {
-            return new Response<Record>(false, ex.Message);
+            return new Response<Record?>(false, ex.Message);
         }
     }
 
@@ -60,7 +60,7 @@ public class RecordService : IBaseService<Record>
         }
     }
 
-    public async Task<Response<Record>> Update(Guid userId, Record t)
+    public async Task<Response<Record?>> Update(Guid userId, Record t)
     {
         try
         {
@@ -73,7 +73,7 @@ public class RecordService : IBaseService<Record>
         }
         catch (Exception e)
         {
-            return new Response<Record>(false, e.ToString());
+            return new Response<Record?>(false, e.ToString());
         }
     }
 

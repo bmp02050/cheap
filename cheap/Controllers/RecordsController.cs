@@ -23,7 +23,7 @@ public class RecordsController : Controller
         _recordService = recordService;
     }
 
-    [HttpPost("create")]
+    [HttpPost("")]
     public async Task<IActionResult> CreateRecord([FromBody] RecordModel recordModel)
     {
         var userId = User.FindFirst("Id")?.Value;

@@ -5,7 +5,7 @@ namespace cheap.Services;
 
 public class LocationService : IBaseService<Location>
 {
-    public Task<Response<Record>> Get(Guid userId, Guid id)
+    public Task<Response<Record?>> Get(Guid userId, Guid id)
     {
         throw new NotImplementedException();
     }
