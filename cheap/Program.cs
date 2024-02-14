@@ -22,6 +22,7 @@ builder.Services
     .AddAutoMapper(typeof(AutoMapperProfile))
     .AddTransient<IUserService, UserService>()
     .AddTransient<IEmailService, EmailService>()
+    .AddTransient<IUserPreferenceService, UserPreferenceService>()
     .AddTransient<ITokenService, TokenService>()
     .AddTransient<IBaseService<Record>, RecordService>()
     .AddTransient<IBaseService<Location>,LocationService>()

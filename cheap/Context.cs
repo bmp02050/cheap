@@ -14,6 +14,7 @@ public class Context : DbContext
     public DbSet<TokenRepository> TokenRepository { get; set; }
     public DbSet<Item> Items { get; set; }
     public DbSet<Location> Locations { get; set; }
+    public DbSet<UserPreference> UserPreferences { get; set; }
     public DbSet<Record> Records { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,5 +36,6 @@ public class Context : DbContext
             .WithMany()
             .HasForeignKey(uf => uf.ItemId)
             .OnDelete(DeleteBehavior.Restrict);
+        
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using cheap;
@@ -11,9 +12,11 @@ using cheap;
 namespace cheap.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240214050553_CHEAP-22")]
+    partial class CHEAP22
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,7 +223,7 @@ namespace cheap.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserPreferences");
+                    b.ToTable("UserPreference");
                 });
 
             modelBuilder.Entity("cheap.Entities.Record", b =>
@@ -253,7 +256,7 @@ namespace cheap.Migrations
             modelBuilder.Entity("cheap.Entities.UserPreference", b =>
                 {
                     b.HasOne("cheap.Entities.User", null)
-                        .WithOne("UserPreferences")
+                        .WithOne("UserPreference")
                         .HasForeignKey("cheap.Entities.UserPreference", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -263,7 +266,7 @@ namespace cheap.Migrations
                 {
                     b.Navigation("Records");
 
-                    b.Navigation("UserPreferences")
+                    b.Navigation("UserPreference")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

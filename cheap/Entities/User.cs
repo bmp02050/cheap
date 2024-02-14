@@ -14,4 +14,5 @@ public class User
     [IgnoreDataMember] public DateTime? UpdatedDate { get; set; }
     [IgnoreDataMember] public Boolean VerifiedEmail { get; set; }
     public virtual ICollection<Record>? Records { get; set; }
+    public virtual required UserPreference UserPreferences { get; set; }
 }

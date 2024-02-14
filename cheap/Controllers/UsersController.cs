@@ -18,16 +18,31 @@ public class UsersController : Controller
     private readonly IMapper _mapper;
     private readonly IEmailService _emailService;
     private readonly ITokenService _tokenService;
+    private readonly IUserPreferenceService _userPreferenceService;
 
     public UsersController(IUserService userService, IMapper mapper, IEmailService emailService,
-        ITokenService tokenService)
+        ITokenService tokenService, IUserPreferenceService userPreferenceService)
     {
         _userService = userService;
         _mapper = mapper;
         _emailService = emailService;
         _tokenService = tokenService;
+        _userPreferenceService = userPreferenceService;
     }
-
+    //User Preferences
+    [HttpPost("preferences")]
+    public async Task<IActionResult> Preferences([FromBody] UserPreference preferences)
+    {
+        try
+        {
+            var result = await _userPreferenceService.Update(preferences);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
+    }
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
