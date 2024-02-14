@@ -25,7 +25,7 @@ public class ItemService : IBaseService<Item>
         throw new NotImplementedException();
     }
 
-    public Task<Response<Item>> Update(Guid userId, Item t)
+    public Task<Response<Record>> Update(Guid userId, Item t)
     {
         throw new NotImplementedException();
     }

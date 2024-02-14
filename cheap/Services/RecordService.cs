@@ -60,7 +60,7 @@ public class RecordService : IBaseService<Record>
         }
     }
 
-    public async Task<Response<Record?>> Update(Guid userId, Record t)
+    public async Task<Response<Record>> Update(Guid userId, Record t)
     {
         try
         {
@@ -73,7 +73,7 @@ public class RecordService : IBaseService<Record>
         }
         catch (Exception e)
         {
-            return new Response<Record?>(false, e.ToString());
+            return new Response<Record>(false, e.ToString());
         }
     }
 

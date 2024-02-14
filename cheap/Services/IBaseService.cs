@@ -9,6 +9,6 @@ public interface IBaseService<T>
     Task<Response<IEnumerable<T>>> List();
     Task<Response<IEnumerable<T>>> ListMine(Guid userId);
     Task<Response<T>> Add(Guid userId, T t);
-    Task<Response<T>> Update(Guid userId, T t);
+    Task<Response<Record>> Update(Guid userId, T t);
     Task<Response<T>> Delete(Guid userId, Guid id);
 }

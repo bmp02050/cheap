@@ -25,7 +25,7 @@ public class LocationService : IBaseService<Location>
         throw new NotImplementedException();
     }
 
-    public Task<Response<Location>> Update(Guid userId, Location t)
+    public Task<Response<Record>> Update(Guid userId, Location t)
     {
         throw new NotImplementedException();
     }

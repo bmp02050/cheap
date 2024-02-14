@@ -121,23 +121,6 @@ public class UsersController : Controller
         return Ok();
     }
 
-    [AllowAnonymous]
-    [HttpPost("authenticate")]
-    public async Task<IActionResult> Authenticate([FromBody] AuthenticateModel model)
-    {
-        try
-        {
-            var response = await _userService.Authenticate(model);
-            if (response is null)
-                return NotFound("User not found");
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
-    
     /// <summary>
     /// 
     /// </summary>

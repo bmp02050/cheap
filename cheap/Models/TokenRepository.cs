@@ -6,5 +6,6 @@ public class TokenRepository
     public Guid UserId { get; set; }
     public String RefreshToken { get; set; }
     public DateTime CreatedOn { get; set; }
-    public Boolean IsValid { get; set; }
+    public DateTime Expiration { get; set; }
+    public Boolean Expired { get; set; }
 }

@@ -9,6 +9,8 @@ public class TokenRepository
     [ForeignKey("UserId")] [Required] public Guid UserId { get; set; }
     [Required] public String RefreshToken { get; set; }
     [Required] public DateTime CreatedOn { get; set; }
-    [Required] public Boolean IsValid { get; set; }
+    [Required] public DateTime Expiration { get; set; }
+    [Required] public Boolean Expired { get; set; }
+    
     
 }

@@ -1,22 +1,16 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using cheap.Entities;
-using cheap.Models.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace cheap.Services;
 
 public interface IUserService
 {
-    Task<AuthenticateResponse> Authenticate(AuthenticateModel model);
-
     Task<User> GetById(Guid id);
     Task<User> Create(User user, string password);
-    Task<User> Update(User user, string password = null);
+    Task<User> Update(User user, String? password = null);
     Task Delete(Guid id);
 }
 
@@ -24,38 +18,13 @@ public class UserService : IUserService
 {
     private readonly Context _context;
     private readonly Jwt _jwt;
+
     public UserService(Context context, IOptions<Jwt> jwtSettings)
     {
         _context = context;
         _jwt = jwtSettings.Value;
     }
-    public async Task<AuthenticateResponse> Authenticate(AuthenticateModel model)
-    {
-        if ((string.IsNullOrEmpty(model.Username) && String.IsNullOrEmpty(model.Email)) ||
-            string.IsNullOrEmpty(model.Password))
-            return null;
 
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == model.Username || x.Email == model.Email);
-
-        // check if username exists
-        if (user == null)
-            return null;
-
-        // check if password is correct
-        if (!VerifyPasswordHash(model.Password, user.PasswordHash, user.PasswordSalt))
-            return null;
-
-        if (!user.VerifiedEmail)
-            throw new Exception("This user does not exist or is not verified");
-
-        // authentication successful
-        var tokens = GetTokens(user);
-        return new AuthenticateResponse(new UserModel()
-        {
-            Id = user.Id,
-            Username = user.Username,
-        }, tokens.authToken, tokens.refreshToken);
-    }
     public async Task<User> GetById(Guid id)
     {
         return await _context.Users.Where(x => x.Id == id)
@@ -138,7 +107,7 @@ public class UserService : IUserService
         }
     }
 
-    
+
     // private helper methods
 
     private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
@@ -151,19 +120,4 @@ public class UserService : IUserService
         passwordSalt = hmac.Key;
         passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
     }
-    private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
-    {
-        if (password == null) throw new ArgumentNullException("password");
-        if (string.IsNullOrWhiteSpace(password))
-            throw new ArgumentException("Value cannot be empty or whitespace only string.", "password");
-        if (storedHash.Length != 64)
-            throw new ArgumentException("Invalid length of password hash (64 bytes expected).", "passwordHash");
-        if (storedSalt.Length != 128)
-            throw new ArgumentException("Invalid length of password salt (128 bytes expected).", "passwordHash");
-
-        using var hmac = new HMACSHA512(storedSalt);
-        var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return !computedHash.Where((t, i) => t != storedHash[i]).Any();
-    }
-    
 }
