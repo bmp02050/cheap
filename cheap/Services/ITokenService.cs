@@ -17,13 +17,13 @@ public interface ITokenService
 
 public class TokenService : ITokenService
 {
-    private readonly Context Context;
+    private readonly Context _context;
     private readonly Jwt _jwt;
 
 
     public TokenService(Context context, IOptions<Jwt> jwtSettings)
     {
-        Context = context;
+        _context = context;
         _jwt = jwtSettings.Value;
     }
     public async Task<String> GenerateRegistrationInvitationTokenAsync(User user)
@@ -41,27 +41,36 @@ public class TokenService : ITokenService
             Expiration = DateTime.UtcNow.AddMinutes(10),
             Used = false
         };
-        var newToken = await Context.RegistrationInviteTokens.AddAsync(token);
-        await Context.SaveChangesAsync();
+        var newToken = await _context.RegistrationInviteTokens.AddAsync(token);
+        await _context.SaveChangesAsync();
         return newToken.Entity.Token;
     }
 
+    public async Task<bool> ValidateRefreshToken(Guid userId, String refreshToken)
+    {
+        var refreshTokenResponse =
+            await _context.TokenRepository.FirstOrDefaultAsync(
+                x => x.UserId == userId && x.RefreshToken == refreshToken);
+        if (refreshTokenResponse is null)
+            throw new Exception("")
+    }
     public async Task<bool> ConfirmRegistrationAsync(Guid userId, string token)
     {
-        var existingToken = await Context.RegistrationInviteTokens.FirstOrDefaultAsync(x => x.UserId == userId && x.Token == token);
+        var existingToken = await _context.RegistrationInviteTokens.FirstOrDefaultAsync(x => x.UserId == userId && x.Token == token);
         var now = DateTime.UtcNow;
         if (now <= existingToken?.Expiration)
         {
             existingToken.Used = true;
-            Context.RegistrationInviteTokens.Update(existingToken);
-            await Context.SaveChangesAsync();
+            _context.RegistrationInviteTokens.Update(existingToken);
+            await _context.SaveChangesAsync();
             return true;
         }
 
         return false;
 
     }
-    private (string authToken, string refreshToken) GetTokens(User user)
+    
+    private async Task<(string authToken, string refreshToken)> GetTokens(User user)
     {
         if (_jwt.Key is null)
             throw new Exception("Missing JWT Key");
@@ -72,7 +81,7 @@ public class TokenService : ITokenService
         var audience = _jwt.Audience;
         var key = Encoding.ASCII.GetBytes(_jwt.Key);
 
-        var tokenDescriptor = new SecurityTokenDescriptor
+        var accessTokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[]
             {
@@ -88,11 +97,20 @@ public class TokenService : ITokenService
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var authToken = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+        var authToken = tokenHandler.WriteToken(tokenHandler.CreateToken(accessTokenDescriptor));
 
         // Generating refresh token
         var refreshToken = GenerateRefreshToken();
-
+        var refreshTokenModel = new TokenRepository()
+        {
+            UserId = user.Id,
+            RefreshToken = refreshToken,
+            CreatedOn = DateTime.UtcNow,
+            IsValid = true
+        };
+        var newRefreshToken = await _context.TokenRepository.AddAsync(refreshTokenModel);
+        await _context.SaveChangesAsync();
+        
         return (authToken, refreshToken);
     }
 

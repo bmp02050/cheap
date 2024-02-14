@@ -6,16 +6,18 @@ public class AuthenticateResponse
     {
     }
 
-    public AuthenticateResponse(UserModel user, string token)
+    public AuthenticateResponse(UserModel user, string accessToken, String refreshToken)
     {
         Id = user.Id;
         Username = user.Username;
-        Token = token;
+        AccessToken = accessToken;
+        RefreshToken = refreshToken;
         Success = true;
     }
 
     public Guid Id { get; set; }
     public String? Username { get; set; }
-    public String? Token { get; set; }
+    public String? AccessToken { get; set; }
+    public String? RefreshToken { get; set; }
     public Boolean Success { get; set; }
 }

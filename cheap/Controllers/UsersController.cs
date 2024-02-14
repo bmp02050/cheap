@@ -16,16 +16,16 @@ public class UsersController : Controller
 {
     private readonly IUserService _userService;
     private readonly IMapper _mapper;
-    private readonly IEmailService EmailService;
-    private readonly ITokenService TokenService;
+    private readonly IEmailService _emailService;
+    private readonly ITokenService _tokenService;
 
     public UsersController(IUserService userService, IMapper mapper, IEmailService emailService,
         ITokenService tokenService)
     {
         _userService = userService;
         _mapper = mapper;
-        EmailService = emailService;
-        TokenService = tokenService;
+        _emailService = emailService;
+        _tokenService = tokenService;
     }
 
     [AllowAnonymous]
@@ -39,11 +39,11 @@ public class UsersController : Controller
         {
             // create user
             var result = await _userService.Create(user, model.Password);
-            var token = await TokenService.GenerateRegistrationInvitationTokenAsync(result);
+            var token = await _tokenService.GenerateRegistrationInvitationTokenAsync(result);
             var confirmationLink =
                 Url.Action("ConfirmEmail", "Users", new { userId = result.Id, token }, Request.Scheme);
 
-            await EmailService.SendEmailAsync(result.Email, "Confirm Email", confirmationLink);
+            await _emailService.SendEmailAsync(result.Email, "Confirm Email", confirmationLink);
 
             return Ok(_mapper.Map<UserModel>(result));
         }
@@ -62,11 +62,11 @@ public class UsersController : Controller
         {
             var user = await _userService.GetById(id);
 
-            var token = await TokenService.GenerateRegistrationInvitationTokenAsync(user);
+            var token = await _tokenService.GenerateRegistrationInvitationTokenAsync(user);
             var confirmationLink =
                 Url.Action("ConfirmEmail", "Users", new { userId = user.Id, token }, Request.Scheme);
 
-            await EmailService.SendEmailAsync(user.Email, "Confirm Email", confirmationLink);
+            await _emailService.SendEmailAsync(user.Email, "Confirm Email", confirmationLink);
             return Ok("Email verification resent");
         }
         catch (Exception e)
@@ -167,7 +167,7 @@ public class UsersController : Controller
         }
 
         var user = await _userService.GetById(new Guid(userId));
-        var result = await TokenService.ConfirmRegistrationAsync(user.Id, token);
+        var result = await _tokenService.ConfirmRegistrationAsync(user.Id, token);
 
         if (result)
         {

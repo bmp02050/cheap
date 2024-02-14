@@ -6,23 +6,23 @@ namespace cheap.Services;
 
 public class RecordService : IBaseService<Record>
 {
-    private readonly Context Context;
-    private readonly IBaseService<Location> LocationService;
-    private readonly IBaseService<Item> ItemService;
+    private readonly Context _context;
+    private readonly IBaseService<Location> _locationService;
+    private readonly IBaseService<Item> _itemService;
 
     public RecordService(Context context, IBaseService<Location> locationService,
         IBaseService<Item> itemService)
     {
-        Context = context;
-        LocationService = locationService;
-        ItemService = itemService;
+        _context = context;
+        _locationService = locationService;
+        _itemService = itemService;
     }
 
     public async Task<Response<Record?>> Get(Guid userId, Guid id)
     {
         try
         {
-            return new Response<Record?>(true, await Context.Records
+            return new Response<Record?>(true, await _context.Records
                 .Where(x => x.Id == id)
                 .Include(x => x.Item)
                 .Include(x => x.Location)
@@ -48,10 +48,10 @@ public class RecordService : IBaseService<Record>
     {
         try
         {
-            var newRecord = await Context.Records.AddAsync(t);
+            var newRecord = await _context.Records.AddAsync(t);
             newRecord.Entity.Location.RecordId = newRecord.Entity.Id;
             newRecord.Entity.Item.RecordId = newRecord.Entity.Id;
-            await Context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return new Response<Record>(true, newRecord.Entity);
         }
         catch (Exception e)
@@ -65,10 +65,10 @@ public class RecordService : IBaseService<Record>
         try
         {
             var record = await Get(userId, t.Id);
-            await ItemService.Update(userId, record.Data?.Item);
-            await LocationService.Update(userId, record.Data?.Location);
-            Context.Entry(record.Data).CurrentValues.SetValues(t);
-            await Context.SaveChangesAsync();
+            await _itemService.Update(userId, record.Data?.Item);
+            await _locationService.Update(userId, record.Data?.Location);
+            _context.Entry(record.Data).CurrentValues.SetValues(t);
+            await _context.SaveChangesAsync();
             return await Get(userId, t.Id);
         }
         catch (Exception e)

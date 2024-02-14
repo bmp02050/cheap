@@ -22,11 +22,11 @@ public interface IUserService
 
 public class UserService : IUserService
 {
-    private readonly Context Context;
+    private readonly Context _context;
     private readonly Jwt _jwt;
     public UserService(Context context, IOptions<Jwt> jwtSettings)
     {
-        Context = context;
+        _context = context;
         _jwt = jwtSettings.Value;
     }
     public async Task<AuthenticateResponse> Authenticate(AuthenticateModel model)
@@ -35,7 +35,7 @@ public class UserService : IUserService
             string.IsNullOrEmpty(model.Password))
             return null;
 
-        var user = await Context.Users.FirstOrDefaultAsync(x => x.Username == model.Username || x.Email == model.Email);
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == model.Username || x.Email == model.Email);
 
         // check if username exists
         if (user == null)
@@ -49,16 +49,16 @@ public class UserService : IUserService
             throw new Exception("This user does not exist or is not verified");
 
         // authentication successful
-        var token = GetToken(user);
+        var tokens = GetTokens(user);
         return new AuthenticateResponse(new UserModel()
         {
             Id = user.Id,
             Username = user.Username,
-        }, token);
+        }, tokens.authToken, tokens.refreshToken);
     }
     public async Task<User> GetById(Guid id)
     {
-        return await Context.Users.Where(x => x.Id == id)
+        return await _context.Users.Where(x => x.Id == id)
             .Include(x => x.Records)
             .ThenInclude(x => x.Item)
             .Include(x => x.Records)
@@ -72,7 +72,7 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(password))
             throw new Exception("Password is required");
 
-        if (Context.Users.Any(x => x.Username == user.Username))
+        if (_context.Users.Any(x => x.Username == user.Username))
             throw new Exception("Username \"" + user.Username + "\" is unavailable");
 
         user.VerifiedEmail = false;
@@ -81,8 +81,8 @@ public class UserService : IUserService
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
 
-        Context.Users.Add(user);
-        await Context.SaveChangesAsync();
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
 
         return user;
     }
@@ -97,7 +97,7 @@ public class UserService : IUserService
         // Update username if it has changed and is not already taken
         if (!string.IsNullOrWhiteSpace(userParam.Username) && userParam.Username != user.Username)
         {
-            if (Context.Users.Any(x => x.Username == userParam.Username))
+            if (_context.Users.Any(x => x.Username == userParam.Username))
                 throw new Exception("Username " + userParam.Username + " is already taken");
             user.Username = userParam.Username;
         }
@@ -124,17 +124,17 @@ public class UserService : IUserService
             user.PasswordSalt = passwordSalt;
         }
 
-        await Context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
         return user;
     }
 
     public async Task Delete(Guid id)
     {
-        var user = await Context.Users.FindAsync(id);
+        var user = await _context.Users.FindAsync(id);
         if (user != null)
         {
-            Context.Users.Remove(user);
-            await Context.SaveChangesAsync();
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
         }
     }
 
@@ -164,35 +164,6 @@ public class UserService : IUserService
         using var hmac = new HMACSHA512(storedSalt);
         var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
         return !computedHash.Where((t, i) => t != storedHash[i]).Any();
-    }
-
-    private String GetToken(User user)
-    {
-        var issuer = _jwt.Issuer;
-        var audience = _jwt.Audience;
-        var key = Encoding.ASCII.GetBytes
-            (_jwt.Key);
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim("Id", user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                new Claim(JwtRegisteredClaimNames.Email, user.Username),
-                new Claim(JwtRegisteredClaimNames.Jti,
-                    user.Id.ToString())
-            }),
-            Expires = DateTime.UtcNow.AddMinutes(60),
-            Issuer = issuer,
-            Audience = audience,
-            SigningCredentials = new SigningCredentials
-            (new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha512Signature)
-        };
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        var jwtToken = tokenHandler.WriteToken(token);
-        return jwtToken;
     }
     
 }
