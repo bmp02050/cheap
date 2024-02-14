@@ -29,6 +29,7 @@ public class TokenService : ITokenService
         _context = context;
         _jwt = jwtSettings.Value;
     }
+
     public async Task<String> GenerateRegistrationInvitationTokenAsync(User user)
     {
         var tokenData = new byte[32];
@@ -36,6 +37,7 @@ public class TokenService : ITokenService
         {
             rng.GetBytes(tokenData);
         }
+
         var tokenString = Convert.ToBase64String(tokenData);
         var token = new RegistrationInviteToken()
         {
@@ -52,21 +54,21 @@ public class TokenService : ITokenService
     public async Task<AuthenticateResponse> RefreshToken(Guid userId, String refreshToken)
     {
         if (_context.Users == null) throw new Exception("User Context is null.");
-        
+
         var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
         if (user is null)
             throw new Exception("Invalid user");
-        
+
         var refreshTokenResponse =
             await _context.TokenRepository.FirstOrDefaultAsync(
                 x => x.UserId == userId && x.RefreshToken == refreshToken);
-        
+
         if (refreshTokenResponse is null)
             throw new Exception("Cannot refresh token. Please log in again.");
-        
+
         if (refreshTokenResponse.Expiration < DateTime.UtcNow || refreshTokenResponse.Expired)
             throw new Exception("Refresh token has expired. Please log in again.");
-       
+
         var tokens = await GetTokens(user);
         return new AuthenticateResponse(new UserModel()
         {
@@ -74,11 +76,12 @@ public class TokenService : ITokenService
             Username = user.Username,
         }, tokens.authToken, tokens.refreshToken);
     }
-    
-    
+
+
     public async Task<bool> ConfirmRegistrationAsync(Guid userId, string token)
     {
-        var existingToken = await _context.RegistrationInviteTokens.FirstOrDefaultAsync(x => x.UserId == userId && x.Token == token);
+        var existingToken =
+            await _context.RegistrationInviteTokens.FirstOrDefaultAsync(x => x.UserId == userId && x.Token == token);
         var now = DateTime.UtcNow;
         if (now <= existingToken?.Expiration)
         {
@@ -89,15 +92,16 @@ public class TokenService : ITokenService
         }
 
         return false;
-
     }
+
     public async Task<AuthenticateResponse> Authenticate(AuthenticateModel model)
     {
         if ((string.IsNullOrEmpty(model.Username) && String.IsNullOrEmpty(model.Email)) ||
             string.IsNullOrEmpty(model.Password))
             return null;
 
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == model.Username || x.Email == model.Email);
+        var user = await _context.Users.FirstOrDefaultAsync(x =>
+            x.Username == model.Username || x.Email == model.Email);
 
         // check if username exists
         if (user == null)
@@ -118,13 +122,14 @@ public class TokenService : ITokenService
             Username = user.Username,
         }, tokens.authToken, tokens.refreshToken);
     }
+
     private async Task<(string authToken, string refreshToken)> GetTokens(User user)
     {
         if (_jwt.Key is null)
             throw new Exception("Missing JWT Key");
         if (user?.Email is null || user?.Username is null)
             throw new Exception("Username or email is null");
-        
+
         var issuer = _jwt.Issuer;
         var audience = _jwt.Audience;
         var key = Encoding.ASCII.GetBytes(_jwt.Key);
@@ -141,7 +146,8 @@ public class TokenService : ITokenService
             Expires = DateTime.UtcNow.AddMinutes(60),
             Issuer = issuer,
             Audience = audience,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -160,20 +166,22 @@ public class TokenService : ITokenService
         };
         await _context.TokenRepository.AddAsync(refreshTokenModel);
         await _context.SaveChangesAsync();
-        
+
         return (authToken, refreshToken);
     }
 
     private async Task CancelRefreshTokens(Guid userId)
     {
-        var userRefreshTokens = await _context.TokenRepository.Where(x => x.UserId == userId && x.Expiration >= DateTime.UtcNow).ToListAsync();
+        var userRefreshTokens = await _context.TokenRepository
+            .Where(x => x.UserId == userId && x.Expiration >= DateTime.UtcNow).ToListAsync();
         foreach (var token in userRefreshTokens)
         {
             token.Expired = true;
         }
+
         await _context.SaveChangesAsync();
-        
     }
+
     private string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
@@ -181,6 +189,7 @@ public class TokenService : ITokenService
         rng.GetBytes(randomNumber);
         return Convert.ToBase64String(randomNumber);
     }
+
     private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
     {
         if (password == null) throw new ArgumentNullException("password");

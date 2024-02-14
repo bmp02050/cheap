@@ -34,12 +34,22 @@ public class RecordService : IBaseService<Record>
         }
     }
 
-    public Task<Response<IEnumerable<Record>>> List()
+    public async Task<Response<IEnumerable<Record>>> List()
     {
-        throw new NotImplementedException();
+        try
+        {
+            return new Response<IEnumerable<Record>>(true, await _context.Records
+                .Include(x => x.Item)
+                .Include(x => x.Location)
+                .ToListAsync());
+        }
+        catch (Exception ex)
+        {
+            return new Response<IEnumerable<Record>>(false, ex.Message);
+        }
     }
 
-    public Task<Response<IEnumerable<Record>>> ListMine(Guid userId)
+    public async Task<Response<IEnumerable<Record>>> ListMine(Guid userId)
     {
         throw new NotImplementedException();
     }
@@ -77,7 +87,7 @@ public class RecordService : IBaseService<Record>
         }
     }
 
-    public Task<Response<Record>> Delete(Guid userId, Guid id)
+    public async Task<Response<Record>> Delete(Guid userId, Guid id)
     {
         throw new NotImplementedException();
     }

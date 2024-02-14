@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Mail;
 
 namespace cheap.Services;
@@ -26,9 +27,9 @@ public class EmailService : IEmailService
 
         using (var smtpClient = new SmtpClient(smtpServer, smtpPort))
         {
-            smtpClient.Credentials = new System.Net.NetworkCredential(smtpUser, smtpPassword);
+            smtpClient.Credentials = new NetworkCredential(smtpUser, smtpPassword);
             smtpClient.EnableSsl = enableSsl;
-            
+
             var mail = new MailMessage
             {
                 From = new MailAddress(smtpUser, "DM ME!"),
