@@ -12,5 +12,5 @@ public class ItemModel
     public Double Cost { get; set; }
     public Double Quantity { get; set; }
     [MaxLength(30)] public String? Barcode { get; set; }
-    public Byte[]? ImageData { get; set; }
+    public String? ImageData { get; set; }
 }

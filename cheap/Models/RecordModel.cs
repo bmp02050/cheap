@@ -1,11 +1,12 @@
 using cheap.Models.Users;
+using Newtonsoft.Json;
 
 namespace cheap.Models;
 
 public class RecordModel
 {
-    public Guid Id { get; set; }
-    public required Guid UserId { get; set; }
-    public required LocationModel? Location { get; set; }
-    public required ItemModel? Item { get; set; }
+    [JsonProperty("id")] public Guid? Id { get; set; }
+    [JsonProperty("userId")] public Guid UserId { get; set; }
+    [JsonProperty("location")] public LocationModel? Location { get; set; }
+    [JsonProperty("item")] public ItemModel? Item { get; set; }
 }

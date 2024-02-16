@@ -59,8 +59,10 @@ public class RecordService : IBaseService<Record>
         try
         {
             var newRecord = await _context.Records.AddAsync(t);
-            newRecord.Entity.Location.RecordId = newRecord.Entity.Id;
-            newRecord.Entity.Item.RecordId = newRecord.Entity.Id;
+            if (newRecord.Entity.Location != null)
+                newRecord.Entity.Location.RecordId = newRecord.Entity.Id;
+            if (newRecord.Entity.Item != null)
+                newRecord.Entity.Item.RecordId = newRecord.Entity.Id;
             await _context.SaveChangesAsync();
             return new Response<Record>(true, newRecord.Entity);
         }
