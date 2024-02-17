@@ -16,9 +16,12 @@ AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 var builder = WebApplication.CreateBuilder(args);
 
 var jwtSettingSection = builder.Configuration.GetSection("Jwt");
+var ocrSettingsSection = builder.Configuration.GetSection("Ocr");
+
 builder.Services
     .Configure<Jwt>(jwtSettingSection)
     .AddScoped<Jwt>()
+    .Configure<OcrSettings>(ocrSettingsSection)
     .AddAutoMapper(typeof(AutoMapperProfile))
     .AddTransient<IUserService, UserService>()
     .AddTransient<IEmailService, EmailService>()
@@ -27,6 +30,9 @@ builder.Services
     .AddTransient<IBaseService<Record>, RecordService>()
     .AddTransient<IBaseService<Location>,LocationService>()
     .AddTransient<IBaseService<Item>, ItemService>()
+    .AddTransient<IOcrService, OcrService>()
+    .AddScoped<OcrClient>()
+    .AddScoped<OcrSettings>()
     .AddDbContext<Context>(options =>
     {
         options.UseNpgsql(builder.Configuration["ConnectionStrings:dev"]);
