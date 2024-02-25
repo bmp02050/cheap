@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace cheap.Controllers;
 
 [EnableRateLimiting("fixed")]
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : Controller

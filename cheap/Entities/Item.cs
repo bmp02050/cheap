@@ -14,4 +14,5 @@ public class Item
     [Required] public Double Quantity { get; set; }
     [Required] [MaxLength(30)] public String? Barcode { get; set; }
     [Required] public String? ImageData { get; set; }
+    [Required] public String ImageText { get; set; }
 }

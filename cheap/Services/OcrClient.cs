@@ -5,14 +5,9 @@ using Microsoft.Extensions.Options;
 
 namespace cheap.Services;
 
-public class OcrClient
+public class OcrClient(IOptions<OcrSettings> ocrSettings)
 {
-    private readonly OcrSettings _ocrSettings;
-
-    public OcrClient(IOptions<OcrSettings> ocrSettings)
-    {
-        _ocrSettings = ocrSettings.Value;
-    }
+    private readonly OcrSettings _ocrSettings = ocrSettings.Value;
 
     public async Task<OcrResult> GetOcrResult(byte[] imageData)
     {
@@ -37,7 +32,7 @@ public class OcrClient
             response = await client.PostAsync(uri, content);
         }
 
-        var stuff = await response.Content.ReadAsAsync<OcrResult>();
-        return stuff;
+        var result = await response.Content.ReadAsAsync<OcrResult>();
+        return result;
     }
 }

@@ -53,6 +53,7 @@ public class ItemService : IBaseService<Item>
                     Description = x.Item.Description,
                     Id = x.Item.Id,
                     ImageData = x.Item.ImageData,
+                    ImageText = x.Item.ImageText,
                     Name = x.Item.Name,
                     Quantity = x.Item.Quantity,
                     RecordId = x.Item.RecordId,
