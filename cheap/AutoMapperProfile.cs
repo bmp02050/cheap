@@ -19,6 +19,8 @@ namespace cheap
             CreateMap<ItemModel, Item>();
             CreateMap<Location, LocationModel>();
             CreateMap<LocationModel, Location>();
+            CreateMap<IEnumerable<Record>, IEnumerable<RecordModel>>();
+            CreateMap<IEnumerable<RecordModel>, IEnumerable<Record>>();
         }
     }
 }

@@ -70,4 +70,22 @@ public class RecordsController : Controller
 
         return BadRequest(response);
     }
+
+    [HttpGet("list/{id}")]
+    public async Task<IActionResult> ListMyRecords([FromRoute] Guid id)
+    {
+        var userId = User.FindFirst("Id")?.Value;
+        if (String.IsNullOrEmpty(userId))
+            return BadRequest("User not found");
+
+        if (userId != id.ToString())
+            return BadRequest("User does not match");
+        var response = await _recordService.ListMine(new Guid(userId));
+        if (response.Success)
+        {
+            return Ok(response);
+        }
+
+        return BadRequest(response);
+    }
 }

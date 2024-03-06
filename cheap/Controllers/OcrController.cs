@@ -21,7 +21,7 @@ public class OcrController : Controller
         _mapper = mapper;
         _ocrService = ocrService;
     }
-    
+
     [HttpPost("")]
     public async Task<IActionResult> GetOcrData([FromBody] String imageData)
     {
@@ -36,5 +36,4 @@ public class OcrController : Controller
             return BadRequest(e.Message);
         }
     }
-
 }

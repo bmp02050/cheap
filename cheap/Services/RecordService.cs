@@ -51,7 +51,18 @@ public class RecordService : IBaseService<Record>
 
     public async Task<Response<IEnumerable<Record>>> ListMine(Guid userId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            return new Response<IEnumerable<Record>>(true, await _context.Records
+                .Where(x => x.UserId == userId)
+                .Include(x => x.Item)
+                .Include(x => x.Location)
+                .ToListAsync());
+        }
+        catch (Exception ex)
+        {
+            return new Response<IEnumerable<Record>>(false, ex.Message);
+        }
     }
 
     public async Task<Response<Record>> Add(Guid userId, Record t)
